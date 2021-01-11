@@ -150,6 +150,9 @@ CLASS lcl_sfut_email_details DEFINITION.
     METHODS set_database
       IMPORTING VALUE(im_database) TYPE REF TO lcl_sfut_email_database.
 
+    METHODS get_attachment
+      RETURNING VALUE(re_attachment) TYPE zmal_sfut_supplier_data_t.
+
     METHODS set_attachment
       IMPORTING VALUE(im_attachment) TYPE zmal_sfut_supplier_data_t.
 
@@ -187,6 +190,8 @@ CLASS lcl_sfut_email_details DEFINITION.
     METHODS get_buyer_addresses
       RETURNING VALUE(re_email_addresses)
                   TYPE lif_sfut_email=>tt_email_address.
+
+
 
 ENDCLASS.
 

@@ -18,7 +18,18 @@ CLASS lcl_sfut_email IMPLEMENTATION.
 
   METHOD send.
 
+    DATA lt_rawdata   TYPE solix_tab.
+    DATA lv_bytecount TYPE sood-objlen.
 
+    DATA(lr_excel) = NEW zmal_cl_sfut_email_excel( ).
+
+    lr_excel->create_excel(
+      EXPORTING
+        delinq_table_raw = me->details->get_attachment( )
+      IMPORTING
+        ex_rawdata       = lt_rawdata
+        ex_bytecount     = lv_bytecount
+    ).
 
   ENDMETHOD.
 
@@ -311,6 +322,10 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
 
   METHOD set_database.
     me->database = im_database.
+  ENDMETHOD.
+
+  METHOD get_attachment.
+    re_attachment = me->attachment.
   ENDMETHOD.
 
   METHOD set_attachment.
