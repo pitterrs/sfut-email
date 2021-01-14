@@ -44,20 +44,21 @@ CLASS lcl_sfut_email IMPLEMENTATION.
         ).
 
         DATA(lr_document) = cl_document_bcs=>create_document(
-          i_type        = 'RAW'
+          i_type        = lcl_sfut_email=>document_type
           i_subject     = CONV so_obj_des( me->details->get_subject( ) )
           i_text        = me->details->get_body( )
         ).
 
         " Create attachment header
-        APPEND VALUE #( line = '&SO_FILENAME=follow_up_data.xlsx' )
-          TO lt_attachment_header.
+        APPEND VALUE #(
+            line = |&SO_FILENAME={ lcl_sfut_email=>attachment_name }|
+        ) TO lt_attachment_header.
 
         " Add the attachment data to the e-mail object
         lr_document->add_attachment(
           EXPORTING
-            i_attachment_type     = 'XLS'
-            i_attachment_subject  = 'follow_up_data.xlsx'
+            i_attachment_type     = lcl_sfut_email=>attachment_type
+            i_attachment_subject  = lcl_sfut_email=>attachment_name
             i_attachment_size     = lv_bytecount
             i_att_content_hex     = lt_rawdata
             i_attachment_header   = lt_attachment_header
@@ -296,7 +297,7 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
     me->database = im_database.
     me->purch_org = im_ekorg.
     me->supplier = im_lifnr.
-    me->plant = im_werks.
+    me->plants = im_plants.
   ENDMETHOD.
 
   METHOD get_subject.
@@ -309,14 +310,8 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
         lt_headers[ ekorg = me->purch_org ] DEFAULT space
     ).
 
-    re_subject = COND #(
-      WHEN me->plant IS INITIAL
-      THEN |{ lw_header-subject } - | && |Purch Org: | &&
-        |{ me->purch_org } / Supplier: { me->supplier }|
-      ELSE |{ lw_header-subject } - | && |Purch Org: | &&
-        |{ me->purch_org } / Supplier: { me->supplier } | &&
-        |/ Plant: { me->plant }|
-    ).
+    re_subject = |{ lw_header-subject } - | && |Purch Org: | &&
+        |{ me->purch_org } / Supplier: { me->supplier }|.
 
   ENDMETHOD.
 
@@ -345,12 +340,14 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
     DATA lt_receivers TYPE lif_sfut_email=>tt_receiver.
 
     " Filter by the key at the receivers table (ZMAL_SFUT_RECEIVER)
+    " As the plants are being grouped the first register at the plants
+    " list can be considered for the contacts retrieving process
     lt_receivers = FILTER #(
           me->database->get_receivers( )
           USING KEY primary_key
           WHERE ekorg = me->purch_org
           AND lifnr = me->supplier
-          AND werks = me->plant
+          AND werks = me->plants[ 1 ]-low
     ).
 
     " Return a list of e-mail addresses
@@ -391,30 +388,29 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
 
   METHOD split_attachment.
 
-    " Load data logic attending the presence of the plant information
-    re_filtered = COND #(
-      WHEN me->plant IS INITIAL THEN
-        FILTER #(
-          im_raw_data USING KEY primary_key
-          WHERE ekorg = me->purch_org
-          AND lifnr   = me->supplier
-        )
-      ELSE " Consider the plant for the filter...
-        FILTER #(
-          im_raw_data USING KEY primary_key
-          WHERE ekorg = me->purch_org
-          AND lifnr   = me->supplier
-          AND werks   = me->plant
-        )
-    ).
+    re_filtered = im_raw_data. " Get all data to apply the filters
 
-    CHECK me->plant IS INITIAL.
+    " Check if there is registers with no plant (get all other plants)
+    IF line_exists( me->plants[ low = '' ] ).
+      re_filtered = FILTER #(
+          im_raw_data USING KEY primary_key
+          WHERE ekorg = me->purch_org
+          AND lifnr   = me->supplier
+      ).
+    ELSE. " Delete registers that are out of the plants list instance
+      DELETE re_filtered
+      WHERE ekorg <> me->purch_org
+      OR lifnr <> me->supplier
+      OR werks NOT IN me->plants.
+    ENDIF.
+
+    CHECK line_exists( me->plants[ low = '' ] ).
 
     " Remove other plants that are registered with the same purchasing
-    " organization and supplier data
-    LOOP AT me->get_plants( ) INTO DATA(lv_disregarded_plant).
+    " organization and sup data considering the email grouping logic
+    LOOP AT me->get_disregarded_plants( ) INTO DATA(lv_plant).
       DELETE re_filtered
-      WHERE werks = lv_disregarded_plant.
+      WHERE werks = lv_plant.
     ENDLOOP.
 
   ENDMETHOD.
@@ -431,14 +427,15 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
     me->attachment = im_attachment.
   ENDMETHOD.
 
-  METHOD set_plant.
-    me->plant = im_werks.
+  METHOD set_plants.
+    me->plants = im_plants.
   ENDMETHOD.
 
-  METHOD get_plants.
+  METHOD get_disregarded_plants.
 
     DATA lt_receivers TYPE lif_sfut_email=>tt_receiver.
 
+    " Get plants with the same Purchase Org and Supplier
     lt_receivers = FILTER #(
       me->database->get_receivers( )
       USING KEY primary_key
@@ -446,11 +443,17 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
       AND   lifnr = me->supplier
     ).
 
+    " Unnecessary to consider registers with no plant
     DELETE lt_receivers
     WHERE werks IS INITIAL.
 
+    " Disregard the e-mail for the plants consolidation operation
     DELETE ADJACENT DUPLICATES FROM lt_receivers
     USING KEY primary_key.
+
+    " Remove plants from the e-mail grouping logic
+    DELETE lt_receivers
+    WHERE werks IN me->plants.
 
     " Return a list of plants
     re_plants = VALUE lif_sfut_email=>tt_plant(

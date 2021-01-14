@@ -4,6 +4,14 @@
 
 INTERFACE lif_sfut_email.
 
+  TYPES ltr_werks TYPE RANGE OF werks_d.
+
+  TYPES: BEGIN OF ty_email_to_be_sent,
+           ekorg  TYPE ekorg,
+           lifnr  TYPE lifnr,
+           plants TYPE ltr_werks,
+         END OF ty_email_to_be_sent.
+
   TYPES: BEGIN OF ty_controller,
            werks     TYPE zcsvt024d-werks,
            dispo     TYPE zcsvt024d-dispo,
@@ -15,6 +23,9 @@ INTERFACE lif_sfut_email.
            werks     TYPE zcsvt024-werks,
            smtp_addr TYPE zcsvt024-smtp_addr,
          END OF ty_buyer.
+
+  TYPES tt_email_to_be_sent TYPE SORTED TABLE OF ty_email_to_be_sent
+    WITH NON-UNIQUE KEY primary_key COMPONENTS ekorg lifnr.
 
   TYPES tt_header TYPE STANDARD TABLE OF zmal_sfut_email
     WITH NON-UNIQUE KEY primary_key COMPONENTS ekorg.
@@ -127,7 +138,7 @@ CLASS lcl_sfut_email_details DEFINITION.
       IMPORTING VALUE(im_database) TYPE REF TO lcl_sfut_email_database
                 VALUE(im_ekorg)    TYPE ekorg
                 VALUE(im_lifnr)    TYPE lifnr
-                VALUE(im_werks)    TYPE werks_d OPTIONAL.
+                VALUE(im_plants)   TYPE lif_sfut_email=>ltr_werks.
 
     METHODS get_subject
       RETURNING VALUE(re_subject) TYPE zmal_email_subject.
@@ -157,8 +168,8 @@ CLASS lcl_sfut_email_details DEFINITION.
     METHODS set_attachment
       IMPORTING VALUE(im_attachment) TYPE zmal_sfut_supplier_data_t.
 
-    METHODS set_plant " Used only for testing purpose
-      IMPORTING VALUE(im_werks) TYPE werks_d.
+    METHODS set_plants " Used only for testing purpose
+      IMPORTING VALUE(im_plants) TYPE lif_sfut_email=>ltr_werks.
 
   PRIVATE SECTION.
 
@@ -167,11 +178,11 @@ CLASS lcl_sfut_email_details DEFINITION.
 
     DATA purch_org TYPE ekorg.
     DATA supplier TYPE lifnr.
-    DATA plant TYPE werks_d.
+    DATA plants TYPE lif_sfut_email=>ltr_werks.
 
     DATA attachment TYPE zmal_sfut_supplier_data_t.
 
-    METHODS get_plants
+    METHODS get_disregarded_plants
       RETURNING VALUE(re_plants) TYPE lif_sfut_email=>tt_plant.
 
     METHODS has_sender_exception
@@ -215,5 +226,11 @@ CLASS lcl_sfut_email DEFINITION FINAL.
   PRIVATE SECTION.
 
     DATA details TYPE REF TO lcl_sfut_email_details.
+
+    CONSTANTS document_type TYPE so_obj_tp VALUE 'RAW'.
+
+    CONSTANTS attachment_type TYPE so_obj_tp VALUE 'XLS'.
+
+    constants attachment_name TYPE so_obj_des VALUE 'follow_up.xlsx'.
 
 ENDCLASS.

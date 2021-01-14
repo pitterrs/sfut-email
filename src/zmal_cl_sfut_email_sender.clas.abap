@@ -27,7 +27,7 @@ CLASS zmal_cl_sfut_email_sender DEFINITION PUBLIC FINAL CREATE PUBLIC.
 
     METHODS get_emails_to_be_sent
       RETURNING VALUE(re_emails_to_be_sent)
-                  TYPE lif_sfut_email=>tt_receiver.
+                  TYPE lif_sfut_email=>tt_email_to_be_sent.
 
 ENDCLASS.
 
@@ -57,7 +57,7 @@ CLASS zmal_cl_sfut_email_sender IMPLEMENTATION.
             im_database = me->database " Inject database information
             im_ekorg    = lw_email_to_be_sent-ekorg
             im_lifnr    = lw_email_to_be_sent-lifnr
-            im_werks    = lw_email_to_be_sent-werks
+            im_plants   = lw_email_to_be_sent-plants
       ).
 
       " Split the supplier attachment using the raw_data attribute
@@ -80,9 +80,106 @@ CLASS zmal_cl_sfut_email_sender IMPLEMENTATION.
 
     " The instances of e-mail to be send will be created based on the
     " data registered at the receivers table (ZMAL_SFUT_RECV)
-    re_emails_to_be_sent = me->database->get_receivers( ).
-    DELETE ADJACENT DUPLICATES FROM re_emails_to_be_sent
-    USING KEY primary_key.
+
+    DATA lw_email_to_be_sent TYPE LINE OF
+        lif_sfut_email=>tt_email_to_be_sent.
+
+    DATA lv_different_contacts TYPE abap_bool.
+
+    DATA(lt_receivers) = me->database->get_receivers( ).
+    DATA(lt_emails) = lt_receivers.
+
+    DELETE ADJACENT DUPLICATES FROM lt_emails
+    COMPARING ekorg lifnr werks.
+
+    " Group the e-mails to be sent based on the contacts list of each
+    " registered plant per Purchasing Organization/Supplier
+    LOOP AT lt_emails INTO DATA(lw_email).
+
+      lw_email_to_be_sent-ekorg = lw_email-ekorg.
+      lw_email_to_be_sent-lifnr = lw_email-lifnr.
+      APPEND VALUE #(
+        sign = 'I'
+        option = 'EQ'
+        low = lw_email-werks
+      ) TO lw_email_to_be_sent-plants.
+
+      " Get contacts from this plant
+      DATA(lt_this_contacts) = lt_receivers.
+      DELETE lt_this_contacts
+      WHERE ekorg <> lw_email-ekorg
+      OR lifnr <> lw_email-lifnr
+      OR werks <> lw_email-werks.
+
+      " Get other plants with the same Purch Org and Supplier
+      DATA(lt_other_plants) = lt_emails.
+      DELETE lt_other_plants
+      WHERE ( ekorg <> lw_email-ekorg
+      OR      lifnr <> lw_email-lifnr )
+      OR ( werks = lw_email-werks ).
+
+      DELETE ADJACENT DUPLICATES FROM lt_other_plants
+      COMPARING ekorg lifnr werks.
+
+      LOOP AT lt_other_plants INTO DATA(lw_other_plant).
+
+        " Get contacts from the other plant with the same PurchOrg/Sup
+        DATA(lt_other_contacts) = lt_receivers.
+        DELETE lt_other_contacts
+        WHERE ( ekorg <> lw_other_plant-ekorg
+        OR      lifnr <> lw_other_plant-lifnr
+        OR      werks <> lw_other_plant-werks ).
+
+        " Check if all the contacts of the current plant being processed
+        " are the same on the other plant with the same PurchOrg/Sup
+        lv_different_contacts = COND abap_bool(
+            WHEN lines( lt_this_contacts ) = lines( lt_other_contacts )
+            THEN abap_false ELSE abap_true
+        ).
+        IF lv_different_contacts IS INITIAL.
+          LOOP AT lt_this_contacts INTO DATA(lw_this_contact).
+            lv_different_contacts = COND abap_bool(
+                WHEN line_exists(
+                    lt_other_contacts[ email = lw_this_contact-email ]
+                ) THEN abap_false ELSE abap_true
+            ).
+            IF lv_different_contacts IS NOT INITIAL.
+              EXIT. " Don't need to continue the process... get out!
+            ENDIF.
+          ENDLOOP.
+        ENDIF.
+
+        IF lv_different_contacts IS INITIAL.
+
+          APPEND VALUE #(
+            sign = 'I'
+            option = 'EQ'
+            low = lw_other_plant-werks
+          ) TO lw_email_to_be_sent-plants.
+
+          " Remove from the plant to be iterated because the same was
+          " already added to one e-mail to be sent
+          DELETE lt_emails
+          WHERE ekorg = lw_other_plant-ekorg
+          AND lifnr = lw_other_plant-lifnr
+          AND werks = lw_other_plant-werks.
+
+        ENDIF.
+
+      ENDLOOP.
+
+      APPEND lw_email_to_be_sent TO re_emails_to_be_sent.
+      CLEAR lw_email_to_be_sent.
+      FREE lw_email_to_be_sent-plants.
+
+      " Remove from the plant to be iterated because the same was
+      " already added to one e-mail to be sent
+      DELETE lt_emails
+      WHERE ekorg = lw_email-ekorg
+      AND lifnr = lw_email-lifnr
+      AND werks = lw_email-werks.
+
+    ENDLOOP.
 
   ENDMETHOD.
 
