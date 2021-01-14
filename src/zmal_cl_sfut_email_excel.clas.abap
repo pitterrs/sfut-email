@@ -13,6 +13,10 @@ CLASS zmal_cl_sfut_email_excel DEFINITION PUBLIC FINAL CREATE PUBLIC.
         IMPORTING
           im_path TYPE string
           im_file TYPE string.
+
+    CLASS-METHODS factory
+      RETURNING VALUE(re_instance) TYPE REF TO zmal_cl_sfut_email_excel.
+
   PROTECTED SECTION.
 
   PRIVATE SECTION.
@@ -641,6 +645,10 @@ CLASS zmal_cl_sfut_email_excel IMPLEMENTATION.
 
     ENDDO.
 
+  ENDMETHOD.
+
+  METHOD factory.
+    re_instance = NEW #( ).
   ENDMETHOD.
 
 ENDCLASS.

@@ -61,13 +61,13 @@ CLASS zmal_cl_sfut_email_sender IMPLEMENTATION.
       ).
 
       " Split the supplier attachment using the raw_data attribute
-      DATA(lt_attachment) = lr_details->get_sup_data( me->raw_data ).
+      DATA(lt_atch) = lr_details->split_attachment( me->raw_data ).
 
       " Avoid any e-mail if there is no attachment data
-      CHECK lt_attachment IS NOT INITIAL.
+      CHECK lt_atch IS NOT INITIAL.
 
       " Set the attachment data
-      lr_details->set_attachment( lt_attachment ).
+      lr_details->set_attachment( lt_atch ).
 
       " Append an instance of e-mail to the e-mails array attribute
       APPEND lcl_sfut_email=>factory( lr_details ) TO me->emails.

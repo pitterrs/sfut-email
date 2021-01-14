@@ -133,7 +133,8 @@ CLASS lcl_sfut_email_details DEFINITION.
       RETURNING VALUE(re_subject) TYPE zmal_email_subject.
 
     METHODS get_body
-      RETURNING VALUE(re_body) TYPE lif_sfut_email=>tt_body.
+*      RETURNING VALUE(re_body) TYPE lif_sfut_email=>tt_body.
+      RETURNING VALUE(re_body) TYPE soli_tab.
 
     METHODS get_receivers
       RETURNING VALUE(re_receivers)
@@ -143,7 +144,7 @@ CLASS lcl_sfut_email_details DEFINITION.
       EXPORTING VALUE(ex_sender) TYPE zmal_email_address
                 VALUE(ex_copy)   TYPE lif_sfut_email=>tt_email_address.
 
-    METHODS get_sup_data
+    METHODS split_attachment
       IMPORTING VALUE(im_raw_data) TYPE zmal_sfut_supplier_data_t
       RETURNING VALUE(re_filtered) TYPE zmal_sfut_supplier_data_t.
 
@@ -190,8 +191,6 @@ CLASS lcl_sfut_email_details DEFINITION.
     METHODS get_buyer_addresses
       RETURNING VALUE(re_email_addresses)
                   TYPE lif_sfut_email=>tt_email_address.
-
-
 
 ENDCLASS.
 

@@ -20,16 +20,101 @@ CLASS lcl_sfut_email IMPLEMENTATION.
 
     DATA lt_rawdata   TYPE solix_tab.
     DATA lv_bytecount TYPE sood-objlen.
+    DATA lt_attachment_header TYPE soli_tab.
+    DATA lr_address TYPE REF TO cl_cam_address_bcs.
+    DATA lv_sender TYPE zmal_email_address.
+    DATA lt_copy TYPE lif_sfut_email=>tt_email_address.
 
-    DATA(lr_excel) = NEW zmal_cl_sfut_email_excel( ).
-
-    lr_excel->create_excel(
+    " Create the excel file based on the attachment data
+    zmal_cl_sfut_email_excel=>factory( )->create_excel(
       EXPORTING
         delinq_table_raw = me->details->get_attachment( )
       IMPORTING
         ex_rawdata       = lt_rawdata
         ex_bytecount     = lv_bytecount
     ).
+
+    TRY.
+
+        DATA(lr_bcs) = cl_bcs=>create_persistent( ).
+
+        " Set message subject on request to enable 50+ chars on subj
+        lr_bcs->set_message_subject(
+          me->details->get_subject( )
+        ).
+
+        DATA(lr_document) = cl_document_bcs=>create_document(
+          i_type        = 'RAW'
+          i_subject     = CONV so_obj_des( me->details->get_subject( ) )
+          i_text        = me->details->get_body( )
+        ).
+
+        " Create attachment header
+        APPEND VALUE #( line = '&SO_FILENAME=follow_up_data.xlsx' )
+          TO lt_attachment_header.
+
+        " Add the attachment data to the e-mail object
+        lr_document->add_attachment(
+          EXPORTING
+            i_attachment_type     = 'XLS'
+            i_attachment_subject  = 'follow_up_data.xlsx'
+            i_attachment_size     = lv_bytecount
+            i_att_content_hex     = lt_rawdata
+            i_attachment_header   = lt_attachment_header
+        ).
+        lr_bcs->set_document( lr_document ).
+
+        " Set receivers
+        LOOP AT me->details->get_receivers( ) INTO DATA(lv_receiver).
+          lr_address = cl_cam_address_bcs=>create_internet_address(
+            CONV ad_smtpadr( lv_receiver )
+          ).
+          lr_bcs->add_recipient( lr_address ).
+          FREE lr_address.
+        ENDLOOP.
+
+        " Set sender and CC's
+        me->details->get_senders(
+          IMPORTING
+            ex_sender = lv_sender
+            ex_copy   = lt_copy
+        ).
+
+        lr_address = cl_cam_address_bcs=>create_internet_address(
+          CONV ad_smtpadr( lv_sender )
+        ).
+        lr_bcs->set_sender( lr_address ).
+        FREE lr_address.
+
+        " Set e-mail CC's
+        LOOP AT lt_copy INTO DATA(lv_copy).
+          lr_address = cl_cam_address_bcs=>create_internet_address(
+            CONV ad_smtpadr( lv_copy )
+          ).
+          lr_bcs->add_recipient(
+            EXPORTING
+              i_recipient     = lr_address
+              i_copy          = abap_true
+          ).
+          FREE lr_address.
+        ENDLOOP.
+
+        " Send the e-mail procedure
+        DATA(lv_sent) = lr_bcs->send( i_with_error_screen = abap_true ).
+        COMMIT WORK AND WAIT.
+
+        IF lv_sent IS INITIAL.
+          MESSAGE i001(zmal_sfut_email). " Document not sent
+        ELSE.
+          MESSAGE i000(zmal_sfut_email). " Document ready to be sent
+        ENDIF.
+
+        " Look for the exceptions cx_send_req_bcs & cx_document_bcs
+      CATCH cx_bcs INTO DATA(lr_bcs_error).
+        DATA(lv_error_text) = lr_bcs_error->if_message~get_text( ).
+        MESSAGE lv_error_text TYPE 'I' DISPLAY LIKE 'E'.
+        MESSAGE i002(zmal_sfut_email). " Error in the sending process
+    ENDTRY.
 
   ENDMETHOD.
 
@@ -237,10 +322,21 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
 
   METHOD get_body.
 
+    DATA lt_text_stream TYPE string_table.
+
     " Use the helper class created for the body content configuration
-    re_body = zmal_cl_sfut_email_helper=>factory(
+    DATA(lt_text_component) = zmal_cl_sfut_email_helper=>factory(
         me->purch_org
     )->read_text( ).
+
+    " Convert from STRING_TABLE to SOLI_TAB to add it to the e-mail
+    CALL FUNCTION 'CONVERT_ITF_TO_STREAM_TEXT'
+      TABLES
+        itf_text      = lt_text_component
+        text_stream   = re_body
+      EXCEPTIONS
+        error_message = 1
+        OTHERS        = 2.
 
   ENDMETHOD.
 
@@ -283,14 +379,17 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
     ex_sender = lt_senders[ 1 ]-email. " Set main sender
 
     " Set e-mail CC...
-    CHECK lines( lt_senders ) > 1.
+*    CHECK lines( lt_senders ) > 1.
     ex_copy = VALUE lif_sfut_email=>tt_email_address(
-      FOR lw_sender IN lt_senders FROM 2 ( lw_sender-email )
+*      " Avoid add the sender e-mail as CC
+*      FOR lw_sender IN lt_senders FROM 2 ( lw_sender-email )
+      " Send to the sender as CC
+      FOR lw_sender IN lt_senders ( lw_sender-email )
     ).
 
   ENDMETHOD.
 
-  METHOD get_sup_data.
+  METHOD split_attachment.
 
     " Load data logic attending the presence of the plant information
     re_filtered = COND #(
