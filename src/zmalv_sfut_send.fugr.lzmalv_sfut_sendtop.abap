@@ -1,4 +1,4 @@
-* regenerated at 12/23/2020 07:35:02
+* regenerated at 01/15/2021 08:09:07
 FUNCTION-POOL ZMALV_SFUT_SEND            MESSAGE-ID SV.
 
 * INCLUDE LZMALV_SFUT_SENDD...               " Local class definition
