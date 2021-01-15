@@ -140,11 +140,22 @@ CLASS lcl_sfut_email_details DEFINITION.
                 VALUE(im_lifnr)    TYPE lifnr
                 VALUE(im_plants)   TYPE lif_sfut_email=>ltr_werks.
 
+    METHODS get_purch_org
+      RETURNING VALUE(re_purch_org) TYPE ekorg.
+
+    METHODS get_supplier
+      RETURNING VALUE(re_supplier) TYPE lifnr.
+
+    METHODS get_plants
+      RETURNING VALUE(re_plants) TYPE lif_sfut_email=>ltr_werks.
+
+    METHODS get_plants_as_text
+      RETURNING VALUE(re_text) TYPE text120.
+
     METHODS get_subject
       RETURNING VALUE(re_subject) TYPE zmal_email_subject.
 
     METHODS get_body
-*      RETURNING VALUE(re_body) TYPE lif_sfut_email=>tt_body.
       RETURNING VALUE(re_body) TYPE soli_tab.
 
     METHODS get_receivers
@@ -221,7 +232,11 @@ CLASS lcl_sfut_email DEFINITION FINAL.
     METHODS get_details
       RETURNING VALUE(re_details) TYPE REF TO lcl_sfut_email_details.
 
-    METHODS send.
+    METHODS send
+      RETURNING VALUE(re_sent) TYPE abap_bool
+      RAISING   cx_document_bcs
+                cx_send_req_bcs
+                cx_address_bcs.
 
   PRIVATE SECTION.
 
@@ -231,6 +246,6 @@ CLASS lcl_sfut_email DEFINITION FINAL.
 
     CONSTANTS attachment_type TYPE so_obj_tp VALUE 'XLS'.
 
-    constants attachment_name TYPE so_obj_des VALUE 'follow_up.xlsx'.
+    CONSTANTS attachment_name TYPE so_obj_des VALUE 'follow_up.xlsx'.
 
 ENDCLASS.

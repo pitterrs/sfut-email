@@ -34,88 +34,72 @@ CLASS lcl_sfut_email IMPLEMENTATION.
         ex_bytecount     = lv_bytecount
     ).
 
-    TRY.
+    DATA(lr_bcs) = cl_bcs=>create_persistent( ).
 
-        DATA(lr_bcs) = cl_bcs=>create_persistent( ).
+    " Set message subject on request to enable 50+ chars on subj
+    lr_bcs->set_message_subject(
+      me->details->get_subject( )
+    ).
 
-        " Set message subject on request to enable 50+ chars on subj
-        lr_bcs->set_message_subject(
-          me->details->get_subject( )
-        ).
+    DATA(lr_document) = cl_document_bcs=>create_document(
+      i_type        = lcl_sfut_email=>document_type
+      i_subject     = CONV so_obj_des( me->details->get_subject( ) )
+      i_text        = me->details->get_body( )
+    ).
 
-        DATA(lr_document) = cl_document_bcs=>create_document(
-          i_type        = lcl_sfut_email=>document_type
-          i_subject     = CONV so_obj_des( me->details->get_subject( ) )
-          i_text        = me->details->get_body( )
-        ).
+    " Create attachment header
+    APPEND VALUE #(
+        line = |&SO_FILENAME={ lcl_sfut_email=>attachment_name }|
+    ) TO lt_attachment_header.
 
-        " Create attachment header
-        APPEND VALUE #(
-            line = |&SO_FILENAME={ lcl_sfut_email=>attachment_name }|
-        ) TO lt_attachment_header.
+    " Add the attachment data to the e-mail object
+    lr_document->add_attachment(
+      EXPORTING
+        i_attachment_type     = lcl_sfut_email=>attachment_type
+        i_attachment_subject  = lcl_sfut_email=>attachment_name
+        i_attachment_size     = lv_bytecount
+        i_att_content_hex     = lt_rawdata
+        i_attachment_header   = lt_attachment_header
+    ).
+    lr_bcs->set_document( lr_document ).
 
-        " Add the attachment data to the e-mail object
-        lr_document->add_attachment(
-          EXPORTING
-            i_attachment_type     = lcl_sfut_email=>attachment_type
-            i_attachment_subject  = lcl_sfut_email=>attachment_name
-            i_attachment_size     = lv_bytecount
-            i_att_content_hex     = lt_rawdata
-            i_attachment_header   = lt_attachment_header
-        ).
-        lr_bcs->set_document( lr_document ).
+    " Set receivers
+    LOOP AT me->details->get_receivers( ) INTO DATA(lv_receiver).
+      lr_address = cl_cam_address_bcs=>create_internet_address(
+        CONV ad_smtpadr( lv_receiver )
+      ).
+      lr_bcs->add_recipient( lr_address ).
+      FREE lr_address.
+    ENDLOOP.
 
-        " Set receivers
-        LOOP AT me->details->get_receivers( ) INTO DATA(lv_receiver).
-          lr_address = cl_cam_address_bcs=>create_internet_address(
-            CONV ad_smtpadr( lv_receiver )
-          ).
-          lr_bcs->add_recipient( lr_address ).
-          FREE lr_address.
-        ENDLOOP.
+    " Set sender and CC's
+    me->details->get_senders(
+      IMPORTING
+        ex_sender = lv_sender
+        ex_copy   = lt_copy
+    ).
 
-        " Set sender and CC's
-        me->details->get_senders(
-          IMPORTING
-            ex_sender = lv_sender
-            ex_copy   = lt_copy
-        ).
+    lr_address = cl_cam_address_bcs=>create_internet_address(
+      CONV ad_smtpadr( lv_sender )
+    ).
+    lr_bcs->set_sender( lr_address ).
+    FREE lr_address.
 
-        lr_address = cl_cam_address_bcs=>create_internet_address(
-          CONV ad_smtpadr( lv_sender )
-        ).
-        lr_bcs->set_sender( lr_address ).
-        FREE lr_address.
+    " Set e-mail CC's
+    LOOP AT lt_copy INTO DATA(lv_copy).
+      lr_address = cl_cam_address_bcs=>create_internet_address(
+        CONV ad_smtpadr( lv_copy )
+      ).
+      lr_bcs->add_recipient(
+        EXPORTING
+          i_recipient     = lr_address
+          i_copy          = abap_true
+      ).
+      FREE lr_address.
+    ENDLOOP.
 
-        " Set e-mail CC's
-        LOOP AT lt_copy INTO DATA(lv_copy).
-          lr_address = cl_cam_address_bcs=>create_internet_address(
-            CONV ad_smtpadr( lv_copy )
-          ).
-          lr_bcs->add_recipient(
-            EXPORTING
-              i_recipient     = lr_address
-              i_copy          = abap_true
-          ).
-          FREE lr_address.
-        ENDLOOP.
-
-        " Send the e-mail procedure
-        DATA(lv_sent) = lr_bcs->send( i_with_error_screen = abap_true ).
-        COMMIT WORK AND WAIT.
-
-        IF lv_sent IS INITIAL.
-          MESSAGE i001(zmal_sfut_email). " Document not sent
-        ELSE.
-          MESSAGE i000(zmal_sfut_email). " Document ready to be sent
-        ENDIF.
-
-        " Look for the exceptions cx_send_req_bcs & cx_document_bcs
-      CATCH cx_bcs INTO DATA(lr_bcs_error).
-        DATA(lv_error_text) = lr_bcs_error->if_message~get_text( ).
-        MESSAGE lv_error_text TYPE 'I' DISPLAY LIKE 'E'.
-        MESSAGE i002(zmal_sfut_email). " Error in the sending process
-    ENDTRY.
+    " Send the e-mail procedure
+    re_sent = lr_bcs->send( i_with_error_screen = abap_true ).
 
   ENDMETHOD.
 
@@ -298,6 +282,28 @@ CLASS lcl_sfut_email_details IMPLEMENTATION.
     me->purch_org = im_ekorg.
     me->supplier = im_lifnr.
     me->plants = im_plants.
+  ENDMETHOD.
+
+  METHOD get_purch_org.
+    re_purch_org = me->purch_org.
+  ENDMETHOD.
+
+  METHOD get_supplier.
+    re_supplier = me->supplier.
+  ENDMETHOD.
+
+  METHOD get_plants.
+    re_plants = me->plants.
+  ENDMETHOD.
+
+  METHOD get_plants_as_text.
+    LOOP AT me->plants INTO DATA(lv_plant).
+      re_text = COND #(
+          WHEN re_text IS INITIAL
+          THEN lv_plant
+          ELSE |{ re_text }, { CONV text4( lv_plant ) }|
+      ).
+    ENDLOOP.
   ENDMETHOD.
 
   METHOD get_subject.

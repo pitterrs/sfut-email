@@ -185,10 +185,28 @@ CLASS zmal_cl_sfut_email_sender IMPLEMENTATION.
 
   METHOD send.
 
+    DATA lv_sent_any_message TYPE abap_bool.
+    DATA lv_sent TYPE abap_bool.
+
 * Send each one of the prepared e-mails
     LOOP AT me->emails INTO DATA(lr_email).
-      lr_email->send( ).
+      TRY.
+          lv_sent = lr_email->send( ).
+        CATCH cx_document_bcs cx_send_req_bcs cx_address_bcs.
+          CONTINUE. " Ignore post try/catch operations
+      ENDTRY.
+      IF lv_sent IS NOT INITIAL.
+        lv_sent_any_message = abap_true.
+        CLEAR lv_sent.
+      ENDIF.
     ENDLOOP.
+
+    IF lv_sent_any_message IS INITIAL.
+      MESSAGE s002(zmal_sfut_email). " No e-mail has been sent
+    ELSE.
+      COMMIT WORK AND WAIT.
+      MESSAGE s001(zmal_sfut_email). " The e-mail(s) has been sent
+    ENDIF.
 
   ENDMETHOD.
 

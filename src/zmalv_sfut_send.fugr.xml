@@ -293,7 +293,7 @@
       <TYPE>N</TYPE>
       <NEXTSCREEN>0100</NEXTSCREEN>
       <LINES>061</LINES>
-      <COLUMNS>210</COLUMNS>
+      <COLUMNS>192</COLUMNS>
      </HEADER>
      <CONTAINERS>
       <RPY_DYCATT>
@@ -413,7 +413,7 @@
        <LINE>001</LINE>
        <COLUMN>002</COLUMN>
        <LENGTH>040</LENGTH>
-       <VISLENGTH>015</VISLENGTH>
+       <VISLENGTH>020</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
@@ -430,7 +430,7 @@
        <LINE>001</LINE>
        <COLUMN>003</COLUMN>
        <LENGTH>040</LENGTH>
-       <VISLENGTH>030</VISLENGTH>
+       <VISLENGTH>060</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
@@ -468,6 +468,7 @@
        <FROM_DICT>X</FROM_DICT>
        <MODIFIC>X</MODIFIC>
        <PARAM_ID>EKO</PARAM_ID>
+       <FOREIGNKEY>X</FOREIGNKEY>
        <INPUT_FLD>X</INPUT_FLD>
        <OUTPUT_FLD>X</OUTPUT_FLD>
        <REQU_ENTRY>O</REQU_ENTRY>
@@ -479,11 +480,10 @@
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZMALV_SFUT_SEND-EKOTX</NAME>
        <TEXT>____________________</TEXT>
-       <ROLLING>X</ROLLING>
        <LINE>001</LINE>
        <COLUMN>002</COLUMN>
        <LENGTH>020</LENGTH>
-       <VISLENGTH>015</VISLENGTH>
+       <VISLENGTH>020</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
@@ -515,9 +515,6 @@
       </RPY_DYFATC>
      </FIELDS>
      <FLOW_LOGIC>
-      <RPY_DYFLOW>
-       <LINE>* VCL-Modifications</LINE>
-      </RPY_DYFLOW>
       <RPY_DYFLOW>
        <LINE>PROCESS BEFORE OUTPUT.</LINE>
       </RPY_DYFLOW>
@@ -598,15 +595,6 @@
       </RPY_DYFLOW>
       <RPY_DYFLOW>
        <LINE>  MODULE liste_after_loop.</LINE>
-      </RPY_DYFLOW>
-      <RPY_DYFLOW>
-       <LINE>*</LINE>
-      </RPY_DYFLOW>
-      <RPY_DYFLOW>
-       <LINE>PROCESS ON VALUE-REQUEST.</LINE>
-      </RPY_DYFLOW>
-      <RPY_DYFLOW>
-       <LINE>    FIELD  ZMALV_SFUT_SEND-EKORG MODULE VCL_HELP_VALUES.</LINE>
       </RPY_DYFLOW>
      </FLOW_LOGIC>
     </item>

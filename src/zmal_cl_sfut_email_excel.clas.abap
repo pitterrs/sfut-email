@@ -27,6 +27,9 @@ CLASS zmal_cl_sfut_email_excel DEFINITION PUBLIC FINAL CREATE PUBLIC.
           style_darkgreen_guid          TYPE zexcel_cell_style,
           style_yellow_guid             TYPE zexcel_cell_style,
           style_red_guid                TYPE zexcel_cell_style,
+          style_date_guid               TYPE zexcel_cell_style,
+          style_dt_yellow_guid          TYPE zexcel_cell_style,
+          style_dt_red_guid             TYPE zexcel_cell_style,
           style_unprotected_guid        TYPE zexcel_cell_style,
           style_unprotected_yellow_guid TYPE zexcel_cell_style,
           style_unprotected_red_guid    TYPE zexcel_cell_style,
@@ -140,6 +143,27 @@ CLASS zmal_cl_sfut_email_excel IMPLEMENTATION.
     lo_style->fill->fgcolor-rgb = zcl_excel_style_color=>c_darkgreen.
     me->style_darkgreen_guid = lo_style->get_guid( ).
 
+    " Date styles
+    lo_style = excel->add_new_style( ).
+    lo_style->number_format->format_code = 'dd/mm/yyyy'.
+*      zcl_excel_style_number_format=>c_format_date_ddmmyyyy.
+    me->style_date_guid = lo_style->get_guid( ).
+
+    lo_style = excel->add_new_style( ).
+    lo_style->fill->filltype = zcl_excel_style_fill=>c_fill_solid.
+    lo_style->fill->fgcolor-rgb = zcl_excel_style_color=>c_yellow.
+    lo_style->number_format->format_code = 'dd/mm/yyyy'.
+*      zcl_excel_style_number_format=>c_format_date_ddmmyyyy.
+    me->style_dt_yellow_guid = lo_style->get_guid( ).
+
+    lo_style = excel->add_new_style( ).
+    lo_style->fill->filltype = zcl_excel_style_fill=>c_fill_solid.
+    lo_style->fill->fgcolor-rgb = zcl_excel_style_color=>c_red.
+    lo_style->font->color-rgb = zcl_excel_style_color=>c_white.
+    lo_style->number_format->format_code = 'dd/mm/yyyy'.
+*      zcl_excel_style_number_format=>c_format_date_ddmmyyyy.
+    me->style_dt_red_guid = lo_style->get_guid( ).
+
   ENDMETHOD.
 
   METHOD create_excel.
@@ -210,7 +234,8 @@ CLASS zmal_cl_sfut_email_excel IMPLEMENTATION.
     DATA: lv_editable_style_color_guid TYPE zexcel_cell_style.
 
     DATA: lo_data_validation TYPE REF TO zcl_excel_data_validation,
-          lv_delinq_fieldcat TYPE zexcel_t_fieldcatalog.
+          lv_delinq_fieldcat TYPE zexcel_t_fieldcatalog,
+          lv_date_style_guid TYPE zexcel_cell_style.
 
     me->worksheet = me->excel->add_new_worksheet( ).
     me->worksheet->set_title( 'Form' ).
@@ -250,6 +275,7 @@ CLASS zmal_cl_sfut_email_excel IMPLEMENTATION.
       lv_tab_index = sy-tabix + 1.
 
       lv_editable_style_color_guid = me->style_unprotected_guid.
+      lv_date_style_guid = me->style_date_guid.
 
       " Conditional styling on status
       IF <delinq_item>-ship_status = 'Should Have Shipped,But Has Not'.
@@ -263,6 +289,7 @@ CLASS zmal_cl_sfut_email_excel IMPLEMENTATION.
         ).
 
         lv_editable_style_color_guid = me->style_unprotected_red_guid.
+        lv_date_style_guid = me->style_dt_red_guid.
 
       ELSEIF <delinq_item>-ship_status = 'Should Be Shipping Today'
           OR <delinq_item>-ship_status = 'Should Have Shipped, And Has'.
@@ -276,6 +303,7 @@ CLASS zmal_cl_sfut_email_excel IMPLEMENTATION.
         ).
 
         lv_editable_style_color_guid = me->style_unprotected_yellow_guid.
+        lv_date_style_guid = me->style_dt_yellow_guid.
 
       ENDIF.
 
@@ -327,6 +355,13 @@ CLASS zmal_cl_sfut_email_excel IMPLEMENTATION.
         ip_column = 'S'
         ip_value = ''
         ip_style = lv_editable_style_color_guid
+      ).
+
+      me->worksheet->set_cell_style(
+        EXPORTING
+          ip_column = 'I'
+          ip_row    = lv_tab_index
+          ip_style  = lv_date_style_guid
       ).
 
       " Validation for qty fields

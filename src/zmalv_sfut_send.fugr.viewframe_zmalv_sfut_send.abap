@@ -1,6 +1,6 @@
 *---------------------------------------------------------------------*
 *    program for:   VIEWFRAME_ZMALV_SFUT_SEND
-*   generation date: 12/23/2020 at 07:35:02
+*   generation date: 01/15/2021 at 08:09:07
 *   view maintenance generator version: #001407#
 *---------------------------------------------------------------------*
 FUNCTION VIEWFRAME_ZMALV_SFUT_SEND     .

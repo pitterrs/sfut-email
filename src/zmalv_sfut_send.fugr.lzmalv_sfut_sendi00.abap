@@ -1,6 +1,6 @@
 *---------------------------------------------------------------------*
 *    view related PAI modules
-*   generation date: 12/23/2020 at 07:35:02
+*   generation date: 01/15/2021 at 08:09:07
 *   view maintenance generator version: #001407#
 *---------------------------------------------------------------------*
 *...processing: ZMALV_SFUT_SEND.................................*
