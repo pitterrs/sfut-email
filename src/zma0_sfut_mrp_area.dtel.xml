@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DTEL" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD04V>
+    <ROLLNAME>ZMA0_SFUT_MRP_AREA</ROLLNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DOMNAME>BERID</DOMNAME>
+    <HEADLEN>10</HEADLEN>
+    <SCRLEN1>10</SCRLEN1>
+    <SCRLEN2>20</SCRLEN2>
+    <SCRLEN3>40</SCRLEN3>
+    <DDTEXT>Supplier Follow Up Tool: MRP Area (Plant)</DDTEXT>
+    <REPTEXT>Plant</REPTEXT>
+    <SCRTEXT_S>Plant</SCRTEXT_S>
+    <SCRTEXT_M>Plant</SCRTEXT_M>
+    <SCRTEXT_L>Plant</SCRTEXT_L>
+    <DTELMASTER>E</DTELMASTER>
+    <REFKIND>D</REFKIND>
+   </DD04V>
+   <I18N_LANGS>
+    <LANGU>P</LANGU>
+    <LANGU>S</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>P</DDLANGUAGE>
+     <DDTEXT>Ferramenta de Acompanhamento do Fornecedor: Área MRP</DDTEXT>
+     <REPTEXT>Centro</REPTEXT>
+     <SCRTEXT_S>Centro</SCRTEXT_S>
+     <SCRTEXT_M>Centro</SCRTEXT_M>
+     <SCRTEXT_L>Centro</SCRTEXT_L>
+    </item>
+    <item>
+     <DDLANGUAGE>S</DDLANGUAGE>
+     <DDTEXT>Herramienta de seguimiento del proveedor: Área MRP (Unidad)</DDTEXT>
+     <REPTEXT>Unidad</REPTEXT>
+     <SCRTEXT_S>Unidad</SCRTEXT_S>
+     <SCRTEXT_M>Unidad</SCRTEXT_M>
+     <SCRTEXT_L>Unidad</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

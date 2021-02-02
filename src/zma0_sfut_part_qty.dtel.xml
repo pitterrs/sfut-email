@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DTEL" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD04V>
+    <ROLLNAME>ZMA0_SFUT_PART_QTY</ROLLNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DOMNAME>MENG13</DOMNAME>
+    <HEADLEN>17</HEADLEN>
+    <SCRLEN1>10</SCRLEN1>
+    <SCRLEN2>20</SCRLEN2>
+    <SCRLEN3>40</SCRLEN3>
+    <DDTEXT>Supplier Follow Up Tool: Partial Quantity</DDTEXT>
+    <REPTEXT>Partial Quantity</REPTEXT>
+    <SCRTEXT_S>Part Qty</SCRTEXT_S>
+    <SCRTEXT_M>Part Quantity</SCRTEXT_M>
+    <SCRTEXT_L>Partial Quantity</SCRTEXT_L>
+    <DTELMASTER>E</DTELMASTER>
+    <REFKIND>D</REFKIND>
+   </DD04V>
+   <I18N_LANGS>
+    <LANGU>P</LANGU>
+    <LANGU>S</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>P</DDLANGUAGE>
+     <DDTEXT>Ferramenta de Acompanhamento do Fornecedor: Qtd. Parcial</DDTEXT>
+     <REPTEXT>Qtd. Parcial</REPTEXT>
+     <SCRTEXT_S>Qtd. Peças</SCRTEXT_S>
+     <SCRTEXT_M>Quantidade de Peças</SCRTEXT_M>
+     <SCRTEXT_L>Quantidade Parcial</SCRTEXT_L>
+    </item>
+    <item>
+     <DDLANGUAGE>S</DDLANGUAGE>
+     <DDTEXT>Herramienta de Seguimiento del Proveedor: Cantidad Parcial</DDTEXT>
+     <REPTEXT>Cantidad Parcial</REPTEXT>
+     <SCRTEXT_S>Ctd. Pieza</SCRTEXT_S>
+     <SCRTEXT_M>Cantidad de Piezas</SCRTEXT_M>
+     <SCRTEXT_L>Cantidad Parcial</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_TTYP" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD40V>
+    <TYPENAME>ZMA0_SFUT_SUPPLIER_DATA_T</TYPENAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <ROWTYPE>ZMA0_SFUT_SUPPLIER_DATA</ROWTYPE>
+    <ROWKIND>S</ROWKIND>
+    <DATATYPE>STRU</DATATYPE>
+    <ACCESSMODE>S</ACCESSMODE>
+    <KEYDEF>K</KEYDEF>
+    <KEYKIND>N</KEYKIND>
+    <KEYFDCOUNT>0003</KEYFDCOUNT>
+    <DDTEXT>Supplier Follow Up Tool: Supplier Data (E-mail Attachment)</DDTEXT>
+   </DD40V>
+   <DD42V>
+    <DD42V>
+     <TYPENAME>ZMA0_SFUT_SUPPLIER_DATA_T</TYPENAME>
+     <KEYFDPOS>0001</KEYFDPOS>
+     <ROWTYPEPOS>0001</ROWTYPEPOS>
+     <KEYFIELD>EKORG</KEYFIELD>
+    </DD42V>
+    <DD42V>
+     <TYPENAME>ZMA0_SFUT_SUPPLIER_DATA_T</TYPENAME>
+     <KEYFDPOS>0002</KEYFDPOS>
+     <ROWTYPEPOS>0013</ROWTYPEPOS>
+     <KEYFIELD>LIFNR</KEYFIELD>
+    </DD42V>
+    <DD42V>
+     <TYPENAME>ZMA0_SFUT_SUPPLIER_DATA_T</TYPENAME>
+     <KEYFDPOS>0003</KEYFDPOS>
+     <ROWTYPEPOS>0002</ROWTYPEPOS>
+     <KEYFIELD>WERKS</KEYFIELD>
+    </DD42V>
+   </DD42V>
+  </asx:values>
+ </asx:abap>
+</abapGit>
