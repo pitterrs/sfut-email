@@ -5,7 +5,7 @@ Here, you will find the development approach taken and the technical artifacts r
 
 > **Project Details**
 > 
->  - **Package:** ZMM_SFUT_EMAIL
+>  - **Package:** ZMM.ZMM_SFUT.ZMM_SFUT_EMAIL
 >  - **Source System:** SAP AG
 >  - **Product Owner:** Rafael Cruz (CruzRafaelS@JohnDeere.com)
 
@@ -148,13 +148,13 @@ Due to the technological nature of the components assembled to create the Suppli
 
 Considering the development procedure previously mentioned at the technical approach topic, please consider the mentioned caveats as relevant for future feature implementations and maintenance:
 
-* Consider attach excel extraction and reading procedures on the clas `ZMA0_CL_SFUT_EMAIL_SENDER`;
+* Consider attach excel excel sending and e-mail preparation procedures on the clas `ZMA0_CL_SFUT_EMAIL_SENDER`;
 
-* Use the `ZMA0_CL_SFUT_EMAIL_RECEIVER` to retrieve the excel from a local machine, and only to that purpose. This way we will be able to assure the file data extraction procedure will be loosely coupled enable the components reusability.
+* Use the `ZMA0_CL_SFUT_EMAIL_RECEIVER` to retrieve the excel from a local machine, and only to that purpose. This way we will be able to assure the file data extraction procedure will be loosely coupled enable the components reusability;
 
 * All the methods and functions related to the EXCEL file creation will be attached to the class `ZMA0_CL_SFUT_EMAIL_EXCEL`;
 
-* The `ZMA0_CL_SFUT_EMAIL_HELPER` class will be used on the maintenance view for the database table `ZMA0_SFUT_EMAIL` to handle the text component from the SO10 transaction.
+* The `ZMA0_CL_SFUT_EMAIL_HELPER` class will be used on the maintenance view for the database table `ZMA0_SFUT_EMAIL` to handle the text component from the SO10 transaction;
 
 * Update this documentation, keep it simple, clear and always befitting reality.
 
